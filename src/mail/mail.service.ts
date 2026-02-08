@@ -1,37 +1,49 @@
-// Sends OTP emails. In development, can log instead of sending (MAIL_LOG_ONLY=true).
-import { Injectable, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import nodemailer from "nodemailer";
+import * as nodemailer from 'nodemailer';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 @Injectable()
 export class MailService {
-  private readonly logger = new Logger(MailService.name);
+  private transporter;
 
-  constructor(private readonly config: ConfigService) {}
+  constructor() {
+    this.transporter = nodemailer.createTransport({
+      host: process.env.MAIL_HOST,
+      port: Number(process.env.MAIL_PORT),
+      secure: false, // true only for port 465
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    });
+  }
 
-  async sendOtpEmail(to: string, subject: string, otp: string) {
-    const mailCfg = this.config.get("mail") as any;
+  async sendOtpEmail(
+    to: string,
+    subject: string,
+    otp: string,
+  ): Promise<void> {
+    try {
+      await this.transporter.sendMail({
+        from: process.env.MAIL_FROM,
+        to,
+        subject,
+        html: `
+          <div style="font-family: Arial, sans-serif;">
+            <h2>${subject}</h2>
+            <p>Your OTP code is:</p>
+            <h1 style="letter-spacing: 4px;">${otp}</h1>
+            <p>This code expires in 10 minutes.</p>
+            <p>If you did not request this, please ignore.</p>
+          </div>
+        `,
+      });
 
-    // Log-only mode (good for local dev or assessments)
-    if (mailCfg.logOnly) {
-      this.logger.warn(
-        `[MAIL_LOG_ONLY] To=${to} Subject="${subject}" OTP=${otp}`
+      console.log('OTP email sent to:', to);
+    } catch (error) {
+      console.error('Failed to send OTP email:', error);
+      throw new InternalServerErrorException(
+        'Failed to send OTP email',
       );
-      return;
     }
-
-    const transporter = nodemailer.createTransport({
-      host: mailCfg.host,
-      port: mailCfg.port,
-      secure: mailCfg.port === 465,
-      auth: mailCfg.user ? { user: mailCfg.user, pass: mailCfg.pass } : undefined
-    });
-
-    await transporter.sendMail({
-      from: mailCfg.from,
-      to,
-      subject,
-      text: `Your OTP is: ${otp}\n\nIt expires soon. If you did not request this, ignore this email.`
-    });
   }
 }

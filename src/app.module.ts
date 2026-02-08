@@ -1,23 +1,21 @@
-import { Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
-
-// ESM-safe imports
-import configuration from "./config/configuration.js";
-import { MailModule } from "./mail/mail.module.js";
-import { UsersModule } from "./users/users.module.js";
-import { AuthModule } from "./auth/auth.module.js";
-import { DatabaseModule } from "./database/database.module.js";
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import configuration from './config/configuration';
+import { AuthModule } from './auth/auth.module';
+import { MailModule } from './mail/mail.module';
+import { UsersModule } from './users/users.module';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,
-      load: [configuration]
+      isGlobal: true, // ✅ makes process.env available everywhere
+      load: [configuration],
     }),
     DatabaseModule,
     MailModule,
     UsersModule,
-    AuthModule
-  ]
+    AuthModule,
+  ],
 })
 export class AppModule {}
