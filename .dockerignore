@@ -1,0 +1,17 @@
+node_modules
+dist
+npm-debug.log
+.env
+.git
+.github
+.vscode
+.DS_Store
+Dockerfile
+docker-compose.yml
+node_modules;
+dist.env.git.gitignore;
+npm - debug.log;
+Dockerfile;
+docker - compose.yml;
+dist
+.git

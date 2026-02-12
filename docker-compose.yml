@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: task_module
+    volumes: 
+      - db_data:/var/lib/mysql
+    ports:
+      - '3307:3306' # i added this so it wont cause confict with mysql on host machine
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Override DATABASE_URL to point at the mysql service
+      DATABASE_URL: mysql://root:password@db:3306/task_module
+      PORT: 3003
+      RESEND_API_KEY: ${RESEND_API_KEY}
+    depends_on:
+      - db
+    ports:
+      - '3003:3003'
+    command: node --require ./crypto-shim.js dist/main.js
+
+volumes:
+  db_data:
