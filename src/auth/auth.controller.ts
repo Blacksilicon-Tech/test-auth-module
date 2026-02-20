@@ -4,6 +4,8 @@ import { AuthService } from './auth.service';
 import { SignupDto, SigninDto, VerifyEmailDto, ForgotPasswordDto, ResetPasswordDto, UpdateUserDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guards';
 import { UserService } from '../user/user.service';
+import { ApiExcludeController } from '@nestjs/swagger';
+
 
 @ApiTags('auth')
 @Controller('auth')
